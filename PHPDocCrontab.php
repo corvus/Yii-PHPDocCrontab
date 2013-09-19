@@ -218,8 +218,8 @@ RAW;
         $command =
             $this->interpreterPath.' '.
             $command.
-            ' >'.escapeshellarg($stdout).
-            ' 2>'.(($stdout === $stderr)?'&1':escapeshellarg($stderr));
+            ' >>'.escapeshellarg($stdout).
+            ' 2>'.(($stdout === $stderr)?'&1': ('>' . escapeshellarg($stderr)));
 
         if ($this->isWindowsOS()){
             //Windows OS
