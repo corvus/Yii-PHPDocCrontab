@@ -126,6 +126,7 @@ RAW;
             array(1,31), //Days
             array(1,12), //Months
             array(0,6),  //Weekdays
+            array(0,59), // Seconds
         );
         foreach ($parameters AS $n => &$repeat) {
             list($repeat, $every) = explode('\\', $repeat, 2) + array(false, 1);
@@ -159,10 +160,11 @@ RAW;
         //Miss tags:
         //cron, cron-tags, cron-args, cron-strout, cron-stderr
         if (preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER)){
-            foreach ($matches AS $match) $return[$match[3]?$match[3]:0] = $match[4];
+            foreach ($matches AS $match) 
+                $return[ $match[3]?$match[3]:0 ] = $match[4];
 
             if (isset($return[0])){
-                $return['_raw'] = preg_split('#\s+#', $return[0], 5);
+                $return['_raw'] = preg_split('#\s+#', $return[0], 6);
                 $return[0] = $this->transformDatePieces($return['_raw']);
                 //Getting tag list. If empty, string "default" will be used.
                 $return['tags'] = isset($return['tags'])?preg_split('#\W+#', $return['tags']):array('default');
@@ -255,7 +257,7 @@ RAW;
         //Getting timestamp will be used as current
         $time = strtotime($this->timestamp);
         if ($time === false) throw new CException('Bad timestamp format');
-        $now = explode(' ', date('i G j n w', $time));
+        $now = explode(' ', date('i G j n w s', $time));
         $runned = 0;
         foreach ($this->prepareActions() as $task) {
             if (array_intersect($tags, $task['docs']['tags'])){
