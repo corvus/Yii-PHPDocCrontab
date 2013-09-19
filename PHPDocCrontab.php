@@ -144,6 +144,10 @@ RAW;
                 if ($piece%$every !== 0) unset($repeat[$key]);
             }
         }
+        for($i = count($parameters); $i < count($dimensions); ++$i)
+        {
+            $parameters[$i] = range($dimensions[$i][0], $dimensions[$i][1]);
+        }
         return $parameters;
     }
 
