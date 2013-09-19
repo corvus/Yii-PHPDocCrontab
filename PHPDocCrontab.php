@@ -70,6 +70,14 @@ class PHPDocCrontab extends CConsoleCommand {
         if ($this->logsDir === null){
             $this->logsDir = Yii::app()->getRuntimePath();
         }
+	$this->logsDir = Yii::getPathOfAlias($this->logsDir);
+	if ( !file_exists($this->logsDir)) {
+		Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.'.__CLASS__);
+		if(!mkdir($this->logsDir))
+		{
+			Yii::log("Can't create logdir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.'.__CLASS__);
+		}
+	}
         //Checking bootstrap script
         if ($this->bootstrapScript === null){
             $this->bootstrapScript = realpath($this->getCommandRunner()->getScriptName());
