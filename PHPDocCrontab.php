@@ -247,7 +247,10 @@ RAW;
      */
     public function actionRun($args = array()){
         $tags = &$args;
-        $tags[] = 'default';
+        if(count($tags) == 0)
+        {
+            $tags[] = 'default';
+        }
 
         //Getting timestamp will be used as current
         $time = strtotime($this->timestamp);
