@@ -80,8 +80,11 @@ class PHPDocCrontab extends CConsoleCommand
             $this->logsDir = Yii::app()->getRuntimePath();
         }
 
-        $this->logsDir = Yii::getPathOfAlias($this->logsDir);
-        if (!file_exists($this->logsDir)) {
+        if (Yii::getPathOfAlias($this->logsDir) !== false) {
+            $this->logsDir = Yii::getPathOfAlias($this->logsDir);
+        }
+
+        if (!empty($this->logsDir) && !file_exists($this->logsDir)) {
             Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
 
             if (!mkdir($this->logsDir)) {
