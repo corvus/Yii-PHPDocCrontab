@@ -7,7 +7,7 @@
  */
 
 /**
- * PHPDocCrontab is a CConsoleCommand to automaticly running marked actions.
+ * PHPDocCrontab is a CConsoleCommand to automatically running marked actions.
  *
  * @author Evgeny Blinov <e.a.blinov@gmail.com>
  * @package PHPDocCrontab
@@ -20,7 +20,7 @@ class PHPDocCrontab extends CConsoleCommand
     public $tagPrefix = 'cron';
 
     /**
-     * @var string PHP interpriter path (if empty, path will be checked automaticly)
+     * @var string PHP interpreter path (if empty, path will be checked automatically)
      */
     public $interpreterPath = null;
 
@@ -64,7 +64,7 @@ class PHPDocCrontab extends CConsoleCommand
     {
         parent::init();
 
-        //Checking PHP interpriter path
+        //Checking PHP interpreter path
         if ($this->interpreterPath === null) {
             if ($this->isWindowsOS()) {
                 //Windows OS
@@ -85,7 +85,7 @@ class PHPDocCrontab extends CConsoleCommand
             Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
 
             if (!mkdir($this->logsDir)) {
-                Yii::log("Can't create logdir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
+                Yii::log("Can't create log dir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
             }
         }
 
@@ -196,7 +196,7 @@ RAW;
         $pattern = '#^\s*\*\s+@(' . $this->tagPrefix . '(-(\w+))?)\s*(.*?)\s*$#im';
 
         //Miss tags:
-        //cron, cron-tags, cron-args, cron-strout, cron-stderr
+        //cron, cron-tags, cron-args, cron-stdout, cron-stderr
         if (preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER)) {
             foreach ($matches AS $match) {
                 $return[$match[3] ? $match[3] : 0] = $match[4];
@@ -211,6 +211,8 @@ RAW;
                 return $return;
             }
         }
+
+        return array();
     }
 
     /**
@@ -235,7 +237,7 @@ RAW;
             $Methods = $Reflection->getMethods(ReflectionMethod::IS_PUBLIC);
             foreach ($Methods AS $Method) {
                 $name = $Method->getName();
-                //Filetring methods. Valid only public actions.
+                //Filtering methods. Valid only public actions.
                 if (
                     !strncasecmp($name, 'action', 6) &&
                     strlen($name) > 6 &&
@@ -293,6 +295,8 @@ RAW;
      * Running actions associated with {@link PHPDocCrontab} runner and matched with timestamp.
      *
      * @param array $args List of run-tags to running actions (if empty, only "default" run-tag will be runned).
+     *
+     * @throws CException
      */
     public function actionRun($args = array())
     {
