@@ -12,20 +12,23 @@
  * @author Evgeny Blinov <e.a.blinov@gmail.com>
  * @package PHPDocCrontab
  */
-class PHPDocCrontab extends CConsoleCommand {
-
+class PHPDocCrontab extends CConsoleCommand
+{
     /**
      * @var string PHPDoc tag prefix for using by PHPDocCrontab extension.
      */
     public $tagPrefix = 'cron';
+
     /**
      * @var string PHP interpriter path (if empty, path will be checked automaticly)
      */
     public $interpreterPath = null;
+
     /**
      * @var string path to writing logs
      */
     public $logsDir = null;
+
     /**
      * Placeholders:
      *     %L - logsDir path
@@ -33,18 +36,22 @@ class PHPDocCrontab extends CConsoleCommand {
      *     %A - name of action
      *     %P - pid of runner-script (current)
      *     %D(string formatted as arg of date() function) - formatted date
+     *
      * @var string mask log file name
      */
     public $logFileName = '%L/%C.%A.log';
+
     /**
      * @var string Bootstrap script path (if empty, current command runner will be used)
      */
     public $bootstrapScript = null;
+
     /**
      * @var string Timestamp used as current datetime
      * @see http://php.net/manual/en/function.strtotime.php
      */
     public $timestamp = 'now';
+
     /**
      * @var string the name of the default action. Defaults to 'run'.
      */
@@ -53,43 +60,50 @@ class PHPDocCrontab extends CConsoleCommand {
     /**
      * Initialize empty config parameters.
      */
-    public function init() {
+    public function init()
+    {
         parent::init();
+
         //Checking PHP interpriter path
-        if ($this->interpreterPath === null){
-            if ($this->isWindowsOS()){
+        if ($this->interpreterPath === null) {
+            if ($this->isWindowsOS()) {
                 //Windows OS
                 $this->interpreterPath = 'php.exe';
-            }
-            else{
+            } else {
                 //nix based OS
                 $this->interpreterPath = '/usr/bin/env php';
             }
         }
+
         //Checking logs directory
-        if ($this->logsDir === null){
+        if ($this->logsDir === null) {
             $this->logsDir = Yii::app()->getRuntimePath();
         }
-	$this->logsDir = Yii::getPathOfAlias($this->logsDir);
-	if ( !file_exists($this->logsDir)) {
-		Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.'.__CLASS__);
-		if(!mkdir($this->logsDir))
-		{
-			Yii::log("Can't create logdir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.'.__CLASS__);
-		}
-	}
+
+        $this->logsDir = Yii::getPathOfAlias($this->logsDir);
+        if (!file_exists($this->logsDir)) {
+            Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
+
+            if (!mkdir($this->logsDir)) {
+                Yii::log("Can't create logdir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
+            }
+        }
+
         //Checking bootstrap script
-        if ($this->bootstrapScript === null){
+        if ($this->bootstrapScript === null) {
             $this->bootstrapScript = realpath($this->getCommandRunner()->getScriptName());
         }
     }
 
     /**
-	 * Provides the command description.
-	 * @return string the command description.
-	 */
-    public function getHelp() {
-        $commandUsage = $this->getCommandRunner()->getScriptName().' '.$this->getName();
+     * Provides the command description.
+     *
+     * @return string the command description.
+     */
+    public function getHelp()
+    {
+        $commandUsage = $this->getCommandRunner()->getScriptName() . ' ' . $this->getName();
+
         return <<<RAW
 Usage: {$commandUsage} <action>
 
@@ -117,37 +131,51 @@ RAW;
      * Transform string datetime expressions to array sets
      *
      * @param array $parameters
+     *
      * @return array
      */
-    protected function transformDatePieces(array $parameters){
+    protected function transformDatePieces(array $parameters)
+    {
         $dimensions = array(
-            array(0,59), //Minutes
-            array(0,23), //Hours
-            array(1,31), //Days
-            array(1,12), //Months
-            array(0,6),  //Weekdays
-            array(0,59), // Seconds
+            array(0, 59), //Minutes
+            array(0, 23), //Hours
+            array(1, 31), //Days
+            array(1, 12), //Months
+            array(0, 6),  //Weekdays
+            array(0, 59), // Seconds
         );
+
         foreach ($parameters AS $n => &$repeat) {
             list($repeat, $every) = explode('\\', $repeat, 2) + array(false, 1);
-            if ($repeat === '*') $repeat = range($dimensions[$n][0], $dimensions[$n][1]);
-            else {
+
+            if ($repeat === '*') {
+                $repeat = range($dimensions[$n][0], $dimensions[$n][1]);
+            } else {
                 $repeatPiece = array();
                 foreach (explode(',', $repeat) as $piece) {
                     $piece = explode('-', $piece, 2);
-                    if (count($piece) === 2) $repeatPiece = array_merge($repeatPiece, range($piece[0], $piece[1]));
-                    else                     $repeatPiece[] = $piece[0];
+                    if (count($piece) === 2) {
+                        $repeatPiece = array_merge($repeatPiece, range($piece[0], $piece[1]));
+                    } else {
+                        $repeatPiece[] = $piece[0];
+                    }
                 }
                 $repeat = $repeatPiece;
             }
-            if ($every > 1) foreach ($repeat AS $key => $piece){
-                if ($piece%$every !== 0) unset($repeat[$key]);
+
+            if ($every > 1) {
+                foreach ($repeat AS $key => $piece) {
+                    if ($piece % $every !== 0) {
+                        unset($repeat[$key]);
+                    }
+                }
             }
         }
-        for($i = count($parameters); $i < count($dimensions); ++$i)
-        {
+
+        for ($i = count($parameters); $i < count($dimensions); ++$i) {
             $parameters[$i] = range($dimensions[$i][0], $dimensions[$i][1]);
         }
+
         return $parameters;
     }
 
@@ -155,23 +183,31 @@ RAW;
      * Parsing and filtering PHPDoc comments.
      *
      * @param string $comment Raw PHPDoc comment
+     *
      * @return array List of valid tags
      */
-    protected function parseDocComment($comment){
-        if (empty($comment)) return array();
+    protected function parseDocComment($comment)
+    {
+        if (empty($comment)) {
+            return array();
+        }
+
         //Forming pattern based on $this->tagPrefix
-        $pattern = '#^\s*\*\s+@('.$this->tagPrefix.'(-(\w+))?)\s*(.*?)\s*$#im';
+        $pattern = '#^\s*\*\s+@(' . $this->tagPrefix . '(-(\w+))?)\s*(.*?)\s*$#im';
+
         //Miss tags:
         //cron, cron-tags, cron-args, cron-strout, cron-stderr
-        if (preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER)){
-            foreach ($matches AS $match) 
-                $return[ $match[3]?$match[3]:0 ] = $match[4];
+        if (preg_match_all($pattern, $comment, $matches, PREG_SET_ORDER)) {
+            foreach ($matches AS $match) {
+                $return[$match[3] ? $match[3] : 0] = $match[4];
+            }
 
-            if (isset($return[0])){
+            if (isset($return[0])) {
                 $return['_raw'] = preg_split('#\s+#', $return[0], 6);
                 $return[0] = $this->transformDatePieces($return['_raw']);
                 //Getting tag list. If empty, string "default" will be used.
-                $return['tags'] = isset($return['tags'])?preg_split('#\W+#', $return['tags']):array('default');
+                $return['tags'] = isset($return['tags']) ? preg_split('#\W+#', $return['tags']) : array('default');
+
                 return $return;
             }
         }
@@ -182,26 +218,31 @@ RAW;
      *
      * @return array List of command actions associated with {@link PHPDocCrontab} runner.
      */
-    protected function prepareActions(){
+    protected function prepareActions()
+    {
         $actions = array();
         $Runner = $this->getCommandRunner();
+
         // Command loop
-        foreach ($Runner->commands AS $command => $file){
+        foreach ($Runner->commands AS $command => $file) {
             $CommandObject = $Runner->createCommand($command);
-            if ($CommandObject instanceof $this) continue;
+            if ($CommandObject instanceof $this) {
+                continue;
+            }
+
             $Reflection = new ReflectionObject($CommandObject);
             // Methods loop
             $Methods = $Reflection->getMethods(ReflectionMethod::IS_PUBLIC);
-            foreach ($Methods AS $Method){
+            foreach ($Methods AS $Method) {
                 $name = $Method->getName();
                 //Filetring methods. Valid only public actions.
-                if(
-                    !strncasecmp($name,'action',6) &&
+                if (
+                    !strncasecmp($name, 'action', 6) &&
                     strlen($name) > 6 &&
                     ($docComment = $this->parseDocComment($Method->getDocComment()))
-                ){
-                    $name=substr($name, 6);
-                    $name[0]=strtolower($name[0]);
+                ) {
+                    $name = substr($name, 6);
+                    $name[0] = strtolower($name[0]);
                     $actions[] = array(
                         'command' => $command,
                         'action' => $name,
@@ -210,6 +251,7 @@ RAW;
                 }
             }
         }
+
         return $actions;
     }
 
@@ -220,20 +262,20 @@ RAW;
      * @param string $stdout path to file for writing stdout
      * @param string $stderr path to file for writing stderr
      */
-    protected function runCommandBackground($command, $stdout, $stderr){
+    protected function runCommandBackground($command, $stdout, $stderr)
+    {
         $command =
-            $this->interpreterPath.' '.
-            $command.
-            ' >>'.escapeshellarg($stdout).
-            ' 2>'.(($stdout === $stderr)?'&1': ('>' . escapeshellarg($stderr)));
+            $this->interpreterPath . ' ' .
+            $command .
+            ' >>' . escapeshellarg($stdout) .
+            ' 2>' . (($stdout === $stderr) ? '&1' : ('>' . escapeshellarg($stderr)));
 
-        if ($this->isWindowsOS()){
+        if ($this->isWindowsOS()) {
             //Windows OS
-            pclose(popen('start /B "Yii run command" '.$command, 'r'));
-        }
-        else{
+            pclose(popen('start /B "Yii run command" ' . $command, 'r'));
+        } else {
             //nix based OS
-            system($command.' &');
+            system($command . ' &');
         }
     }
 
@@ -242,7 +284,8 @@ RAW;
      *
      * @return boolean return true if script running under windows OS
      */
-    protected function isWindowsOS(){
+    protected function isWindowsOS()
+    {
         return strncmp(PHP_OS, 'WIN', 3) === 0;
     }
 
@@ -251,45 +294,55 @@ RAW;
      *
      * @param array $args List of run-tags to running actions (if empty, only "default" run-tag will be runned).
      */
-    public function actionRun($args = array()){
+    public function actionRun($args = array())
+    {
         $tags = &$args;
-        if(count($tags) == 0)
-        {
+        if (count($tags) == 0) {
             $tags[] = 'default';
         }
 
         //Getting timestamp will be used as current
         $time = strtotime($this->timestamp);
-        if ($time === false) throw new CException('Bad timestamp format');
+        if ($time === false) {
+            throw new CException('Bad timestamp format');
+        }
+
         $now = explode(' ', date('i G j n w s', $time));
         $runned = 0;
         foreach ($this->prepareActions() as $task) {
-            if (array_intersect($tags, $task['docs']['tags'])){
-                foreach ($now AS $key => $piece){
+            if (array_intersect($tags, $task['docs']['tags'])) {
+                foreach ($now AS $key => $piece) {
                     //Checking current datetime on timestamp piece array.
-                    if (!in_array($piece, $task['docs'][0][$key])) continue 2;
+                    if (!in_array($piece, $task['docs'][0][$key])) {
+                        continue 2;
+                    }
                 }
 
                 //Forming command to run
-                $command = $this->bootstrapScript.' '.$task['command'].' '.$task['action'];
-                if (isset($task['docs']['args'])) $command .= ' '.escapeshellcmd($task['docs']['args']);
+                $command = $this->bootstrapScript . ' ' . $task['command'] . ' ' . $task['action'];
+                if (isset($task['docs']['args'])) {
+                    $command .= ' ' . escapeshellcmd($task['docs']['args']);
+                }
 
                 //Setting default stdout & stderr
-                if (isset($task['docs']['stdout'])) $stdout = $task['docs']['stdout'];
-                else                                $stdout = $this->logFileName;
+                if (isset($task['docs']['stdout'])) {
+                    $stdout = $task['docs']['stdout'];
+                } else {
+                    $stdout = $this->logFileName;
+                }
 
                 $stdout = $this->formatFileName($stdout, $task);
-                $stderr = isset($task['docs']['stderr'])?$this->formatFileName($task['docs']['stderr'], $task):$stdout;
+                $stderr = isset($task['docs']['stderr']) ? $this->formatFileName($task['docs']['stderr'], $task) : $stdout;
 
                 $this->runCommandBackground($command, $stdout, $stderr);
-                Yii::log('Running task ['.(++$runned).']: '.$task['command'].' '.$task['action'], CLogger::LEVEL_INFO, 'ext.'.__CLASS__);
+                Yii::log('Running task [' . (++$runned) . ']: ' . $task['command'] . ' ' . $task['action'], CLogger::LEVEL_INFO, 'ext.' . __CLASS__);
             }
         }
-        if ($runned > 0){
-                Yii::log('Runned '.$runned.' task(s) at '.date('r', $time), CLogger::LEVEL_INFO, 'ext.'.__CLASS__);
-        }
-        else{
-                Yii::log('No task on '.date('r', $time), CLogger::LEVEL_INFO, 'ext.'.__CLASS__);
+
+        if ($runned > 0) {
+            Yii::log('Runned ' . $runned . ' task(s) at ' . date('r', $time), CLogger::LEVEL_INFO, 'ext.' . __CLASS__);
+        } else {
+            Yii::log('No task on ' . date('r', $time), CLogger::LEVEL_INFO, 'ext.' . __CLASS__);
         }
     }
 
@@ -298,34 +351,38 @@ RAW;
      *
      * @param $args array List of run-tags for filtering action list (if empty, show all).
      */
-    public function actionView($args = array()){
+    public function actionView($args = array())
+    {
         $tags = &$args;
 
         foreach ($this->prepareActions() as $task) {
-            if (!$tags || array_intersect($tags, $task['docs']['tags'])){
+            if (!$tags || array_intersect($tags, $task['docs']['tags'])) {
                 //Forming to using with printf function
                 $times = $task['docs']['_raw'];
-                array_unshift($times, $task['command'].'.'.$task['action']);
+                array_unshift($times, $task['command'] . '.' . $task['action']);
                 array_unshift($times, "Action %-40s on %6s %6s %6s %6s %6s %s\n");
-                array_push($times, empty($task['docs']['tags'])?'':(' ('.implode(', ', $task['docs']['tags']).')'));
+                array_push($times, empty($task['docs']['tags']) ? '' : (' (' . implode(', ', $task['docs']['tags']) . ')'));
                 call_user_func_array('printf', $times);
             }
         }
     }
 
-    protected function formatFileName($pattern, $task){
+    protected function formatFileName($pattern, $task)
+    {
         $pattern = str_replace(
             array('%L', '%C', '%A', '%P'),
             array($this->logsDir, $task['command'], $task['action'], getmypid()),
             $pattern
         );
+
         return preg_replace_callback('#%D\((.+)\)#U', create_function('$str', 'return date($str[1]);'), $pattern);
     }
 
     /**
      * Help command. Show command usage.
      */
-    public function actionHelp(){
-       echo $this->getHelp();
+    public function actionHelp()
+    {
+        echo $this->getHelp();
     }
 }
