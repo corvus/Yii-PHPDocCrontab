@@ -43,6 +43,16 @@ class PHPDocCrontab extends CConsoleCommand
     public $logFileName = '%L/%T_%C.%A.log';
 
     /**
+     * @var integer log file maximum size
+     */
+    public $logFileMaxSize = 5120; // in KB
+
+    /**
+     * @var integer number of log files to keep
+     */
+    public $logFilesMax = 5;
+
+    /**
      * @var string Bootstrap script path (if empty, current command runner will be used)
      */
     public $bootstrapScript = null;
@@ -296,6 +306,49 @@ RAW;
     }
 
     /**
+     * Check if file must be rotated, and rotate if needed
+     *
+     * @param string $file Full path to file that will be checked
+     */
+    protected function checkRotateFile($file) {
+        $fp = @fopen($file, 'a');
+        @flock($fp, LOCK_EX);
+
+        if (@filesize($file) > $this->logFileMaxSize * 1024) {
+            $this->rotateFiles($file);
+        }
+
+        @flock($fp, LOCK_UN);
+        @fclose($fp);
+    }
+
+    /**
+     * Rotates log file
+     *
+     * @param string $file Full path to file that will be rotated
+     */
+    protected function rotateFiles($file)
+    {
+        $max = $this->logFilesMax;
+
+        for ($i = $max; $i > 0; --$i) {
+            $rotateFile = $file . '.' . $i;
+            if (is_file($rotateFile)) {
+                // suppress errors because it's possible multiple processes enter into this section
+                if ($i === $max) {
+                    @unlink($rotateFile);
+                } else {
+                    @rename($rotateFile, $file . '.' . ($i + 1));
+                }
+            }
+        }
+
+        if (is_file($file)) {
+            @rename($file, $file . '.1');
+        }
+    }
+
+    /**
      * Running actions associated with {@link PHPDocCrontab} runner and matched with timestamp.
      *
      * @param array $args List of run-tags to running actions (if empty, only "default" run-tag will be runned).
@@ -341,6 +394,10 @@ RAW;
 
                 $stdout = $this->formatFileName($stdout, $task);
                 $stderr = isset($task['docs']['stderr']) ? $this->formatFileName($task['docs']['stderr'], $task) : $stdout;
+
+                //Rotate logfiles if needed
+                $this->checkRotateFile($stdout);
+                $this->checkRotateFile($stderr);
 
                 $this->runCommandBackground($command, $stdout, $stderr);
                 Yii::log('Running task [' . (++$runned) . ']: ' . $task['command'] . ' ' . $task['action'], CLogger::LEVEL_INFO, 'ext.' . __CLASS__);

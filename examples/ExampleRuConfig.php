@@ -62,6 +62,18 @@ return array (
             'logFileName' => '%L/%C.%A-%D(Y-m-d H-i-s).log',
 
             /**
+             * Logfile max filesize (in KB)
+             * Default: 5120 (5 MB)
+             */
+            'logFileMaxSize' => 1024,
+
+            /**
+             * Max number of log files to keep
+             * Default: 5
+             */
+            'logFilesMax' => 5,
+
+            /**
              * Forcing bootstrap-script.
              * Default: entry script is used.
              */
