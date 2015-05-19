@@ -36,6 +36,7 @@ class ExampleRuCommand extends CConsoleCommand{
      * Redirect STDOUT and STDERR to the same file.
      * Parameter stdout and stderr can have placeholders consisting of the following:
      *   %L - logsDir path
+     *   %T - tagPrefix value
      *   %C - name of command
      *   %A - name of action
      *   %P - pid of runner-script
@@ -73,14 +74,6 @@ class ExampleRuCommand extends CConsoleCommand{
     public function actionexample6($limit, $offset){}
 
     /**
-     * Пример расширенного использования времени запуска.
-     * Действие будет запускаться
-     * каждую 10, 25, 26, 27, 28, 29, 30, 40 минуту
-     * каждого 2-го (четного) часа
-     * с 15 по 21, и с 23 по 27 число
-     * каждого 2-го (четного) месяца в период с января по июнь включительно
-     * независимо от дня недели.
-     *
      * Extended time launch usage.
      * The action will start
      * Every 10, 25, 26, 27, 28, 29, 30, 40 minutes

@@ -51,12 +51,13 @@ return array (
              * Logfile mask.
              * Possible placeholders:
              *   %L - logsDir path
+             *   %T - tagPrefix value
              *   %C - name of command
              *   %A - name of action
              *   %P - pid of runner-script
              *   %D(format) - formatted date, repeats syntax of date() function
              *
-             * Default: %L/%C.%A.log
+             * Default: %L/%T_%C.%A.log
              */
             'logFileName' => '%L/%C.%A-%D(Y-m-d H-i-s).log',
 

@@ -32,6 +32,7 @@ class PHPDocCrontab extends CConsoleCommand
     /**
      * Placeholders:
      *     %L - logsDir path
+     *     %T - tagPrefix value
      *     %C - name of command
      *     %A - name of action
      *     %P - pid of runner-script (current)
@@ -39,7 +40,7 @@ class PHPDocCrontab extends CConsoleCommand
      *
      * @var string mask log file name
      */
-    public $logFileName = '%L/%C.%A.log';
+    public $logFileName = '%L/%T_%C.%A.log';
 
     /**
      * @var string Bootstrap script path (if empty, current command runner will be used)
@@ -377,8 +378,8 @@ RAW;
     protected function formatFileName($pattern, $task)
     {
         $pattern = str_replace(
-            array('%L', '%C', '%A', '%P'),
-            array($this->logsDir, $task['command'], $task['action'], getmypid()),
+            array('%L', '%T', '%C', '%A', '%P'),
+            array($this->logsDir, $this->tagPrefix, $task['command'], $task['action'], getmypid()),
             $pattern
         );
 
