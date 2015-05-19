@@ -1,14 +1,12 @@
 <?php
 /**
- * Файл примеров установки заданий.
- *
  * @author Evgeny Blinov <e.a.blinov@gmail.com>
  * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
  * @package PHPDocCrontab
  */
 
 /**
- * Класс команды-примера устновки заданий.
+ * Class ExampleRuCommand shows sample jobs
  *
  * @author Evgeny Blinov <e.a.blinov@gmail.com>
  * @package PHPDocCrontab
@@ -17,17 +15,17 @@
 class ExampleRuCommand extends CConsoleCommand{
 
     /**
-     * Простой пример.
-     * Запуск каждый час на 10-ой минуте.
+     * Simple job.
+     * Run every hour on the 10th minute.
      *
      * @cron 10 * * * *
      */
     public function actionexample1(){}
 
     /**
-     * Пример тегирования.
-     * Действие будет запущено только если расширение запускается командой содержащий тег "dbserver" или "cacheserver".
-     * Например так: `./yiic cron run   dbserver storageserver`
+     * Tagged job.
+     * The action will be started only if the extension is launched containing the tag name "dbserver" or "cacheserver".
+     * Like this: `./yiic cron run dbserver storageserver`
      *
      * @cron 10 * * * *
      * @cron-tags dbserver cacheserver
@@ -35,13 +33,13 @@ class ExampleRuCommand extends CConsoleCommand{
     public function actionexample2(){}
 
     /**
-     * Пример перенаправления STDOUT и STDERR в один и тот же файл.
-     * Параметры stdout и stderr могут быть маской, включающей следующие варианты замены:
-     *     %L - содержимое свойства logsDir
-     *     %C - имя исполняемой команды
-     *     %A - имя действия исполняемой команды
-     *     %P - PID запускающего скрипта
-     *     %D(format) - вывод даты в формате format; синтаксис повторяет используемый функций date()
+     * Redirect STDOUT and STDERR to the same file.
+     * Parameter stdout and stderr can have placeholders consisting of the following:
+     *   %L - logsDir path
+     *   %C - name of command
+     *   %A - name of action
+     *   %P - pid of runner-script
+     *   %D(format) - formatted date, repeats syntax of date() function
      *
      * @cron 10 * * * *
      * @cron-stdout /tmp/Example_%C.%A.log
@@ -49,7 +47,7 @@ class ExampleRuCommand extends CConsoleCommand{
     public function actionexample3(){}
 
     /**
-     * Пример перенаправления STDOUT и STDERR в разные файлы.
+     * Redirect STDOUT and STDERR to different files.
      *
      * @cron 10 * * * *
      * @cron-stdout /tmp/ExampleCommand.log
@@ -58,7 +56,7 @@ class ExampleRuCommand extends CConsoleCommand{
     public function actionexample4(){}
 
     /**
-     * Пример перенаправления STDERR в файл (STDOUT выводится в файл по умолчанию).
+     * Redirect STDERR to a file or to a device (STDOUT outputs to a file by default).
      *
      * @cron 10 * * * *
      * @cron-stderr /dev/null
@@ -66,8 +64,8 @@ class ExampleRuCommand extends CConsoleCommand{
     public function actionexample5(){}
 
     /**
-     * Пример команды с аргументами.
-     * Аргументы вводятся точно так же как и при обычном запуске через консоль, с сохранением всех возможностей.
+     * Command with arguments.
+     * Arguments are entered in the same way as normal startup console, while retaining all the features.
      *
      * @cron 10 * * * *
      * @cron-args --limit=5 --offset=10
@@ -83,12 +81,20 @@ class ExampleRuCommand extends CConsoleCommand{
      * каждого 2-го (четного) месяца в период с января по июнь включительно
      * независимо от дня недели.
      *
+     * Extended time launch usage.
+     * The action will start
+     * Every 10, 25, 26, 27, 28, 29, 30, 40 minutes
+     * Every 2nd (even) hours
+     * From 15 to 21 and from 23 to 27 day of month
+     * Every 2nd (even) a month from January to June
+     * Regardless of the day of the week.
+     *
      * @cron 10,25-30,40 *\2 15-21,23-27 1-6\2 *
      */
     public function actionexample7(){}
 
     /**
-     * Все описанные конструкции могут использоваться совместно и в любом порядке.
+     * All the options described may be combined in any order.
      *
      * @cron 10,25-30,40 *\2 15-21,23-27 1-6\2 *
      * @cron-stderr /dev/null

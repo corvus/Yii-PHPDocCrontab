@@ -1,6 +1,6 @@
 <?php
 /**
- * Файл примеров конфигурации приложения.
+ * Application configuration examples.
  *
  * @author Evgeny Blinov <e.a.blinov@gmail.com>
  * @license http://www.opensource.org/licenses/bsd-license.php New BSD License
@@ -9,9 +9,10 @@
  */
 
 /**
- * Простая конфигурация.
- * Вам необходимо распаковать расширение в папку extensions вашего приложения.
- * В соответствии с индексом (cron) массива вам следует использовать команду `./yiic cron`
+ * Easy configuration.
+ *
+ * You need to unpack the expansion in extensions folder of your application.
+ * In accordance with the index (cron) array, you should use `./yiic cron`
  */
 return array (
     'commandMap' => array(
@@ -20,53 +21,57 @@ return array (
 );
 
 /**
- * Конфигурация с заменой параметров.
- * Примечание: каждая из перечисленных ниже опций может быть динамически определена во время запуска.
- * Пример: `./yiic cron run --optionName=optionValue`
+ * Configuration of the options.
+ * Note: Each of the following options can be dynamically defined during startup.
+ * Example: `./yiic cron run --optionName=optionValue`
  */
 return array (
     'commandMap' => array(
         'cron' => array(
             'class' => 'ext.PHPDocCrontab.PHPDocCrontab',
             /**
-             * Префикс тегов при парсинге (по умолчанию cron)
-             * Изменяя вы можете иные теги-задания, например
+             * The prefix tag to look for (default: cron)
              * @mycron * * * * *
              * @mycron-stderr /dev/null
              */
             'tagPrefix' => 'mycron',
+
             /**
-             * Принудительная установка исполняемого файла интерпретатора
+             * Forcing interpreter
              */
             'interpreterPath' => '/usr/local/bin/php -d foo=bar',
+
             /**
-             * Установка папки по умолчанию для сохранения логов.
-             * По умолчанию application.runtime
+             * Set the log folder
+             * Default: application.runtime
              */
             'logsDir' => '/var/log/yiiapp/',
+
             /**
-             * Установка маски имени файла лога.
-             * Параметр может включать варианты замены:
-             *     %L - содержимое свойства logsDir
-             *     %C - имя исполняемой команды
-             *     %A - имя действия исполняемой команды
-             *     %P - PID запускающего скрипта
-             *     %D(format) - вывод даты в формате format; синтаксис повторяет используемый функций date()
+             * Logfile mask.
+             * Possible placeholders:
+             *   %L - logsDir path
+             *   %C - name of command
+             *   %A - name of action
+             *   %P - pid of runner-script
+             *   %D(format) - formatted date, repeats syntax of date() function
              *
-             * По умолчанию %L/%C.%A.log
+             * Default: %L/%C.%A.log
              */
             'logFileName' => '%L/%C.%A-%D(Y-m-d H-i-s).log',
+
             /**
-             * Принудительная установка bootstrap-скрипта.
-             * По умолчанию используется скрипт с помощью которого запущено само расширение.
+             * Forcing bootstrap-script.
+             * Default: entry script is used.
              */
             'bootstrapScript' => __DIR__.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'yiicMod.php',
+
             /**
-             * Временная метка в формате поддерживаемом функцией strtotime,
-             * которая будет использована в качестве текущей при запуске заданий.
+             * timestamp param supports the strtotime function formats,
+             * This will be used as the current time.
              *
-             * Можно использовать для запуска всех необходимых скриптов, если время запуска было пропущено.
-             * Так же можно использовать как метод коррекции часовых поясов сервера по отношению к приложению.
+             * Can be used to run all the necessary scripts, if the start time has been missed.
+             * You can also use this as a method of correction of the time zone.
              */
             'timestamp' => 'now - 1 hour 25 minutes'
         )
