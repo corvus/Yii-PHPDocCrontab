@@ -87,7 +87,7 @@ class PHPDocCrontab extends CConsoleCommand
         if (!empty($this->logsDir) && !file_exists($this->logsDir)) {
             Yii::log("Log dir doesn't exists, trying create", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
 
-            if (!mkdir($this->logsDir)) {
+            if (!mkdir($this->logsDir, 0777, true)) {
                 Yii::log("Can't create log dir: {$this->logsDir}", CLogger::LEVEL_WARNING, 'ext.' . __CLASS__);
             }
         }
